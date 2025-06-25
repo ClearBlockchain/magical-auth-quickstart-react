@@ -13,8 +13,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@stavbl/web-client-sdk": "^2.2.0-alpha.5",
-    "@stavbl/glide-sdk": "^2.2.0-alpha.3",
+    "glide-web-client-sdk": "^3.0.0",
+    "glide-sdk": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",

@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { GlideClient } from '@stavbl/glide-sdk';
+import { GlideClient } from 'glide-sdk';
 import dotenv from 'dotenv';
 
 // Load environment variables

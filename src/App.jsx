@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useClient } from '@stavbl/web-client-sdk/react';
+import { useClient } from 'glide-web-client-sdk/react';
 import glideLogo from './assets/Glide-Logomark.svg';
 
 function App() {
@@ -8,9 +8,12 @@ function App() {
   const [phoneError, setPhoneError] = useState('');
   const [resultFlow, setResultFlow] = useState(null); // Track which flow generated the result
   
+  // URL Configuration:
+  // Option 1: Local server routes (requires running the local Express server with your own Glide credentials)
   // const prepareRequest = '/api/phone-auth/prepare';
   // const processResponse = '/api/phone-auth/process';
 
+  // Option 2: Pre-made external server (for quick testing with hosted credentials)
   const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
   const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
 

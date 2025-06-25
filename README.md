@@ -12,6 +12,26 @@ This is a minimal example demonstrating secure phone authentication using:
 
 ## Setup
 
+### Quick Start (External Server)
+
+For immediate testing without backend setup:
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Start the React app:**
+   ```bash
+   npm run client
+   ```
+
+   This uses a pre-configured external server with hosted Glide credentials for quick testing.
+
+### Full Setup (Local Server)
+
+For production use with your own credentials:
+
 1. **Install dependencies:**
    ```bash
    npm install
@@ -25,7 +45,24 @@ This is a minimal example demonstrating secure phone authentication using:
    GLIDE_CLIENT_SECRET=your_client_secret_here
    ```
 
-3. **Start the development server:**
+3. **Local server is ready:**
+   
+   The `server.ts` file is already provided with complete Glide SDK integration and TypeScript types.
+
+4. **Update client configuration:**
+   
+   In `src/App.jsx`, uncomment the local server URLs:
+   ```javascript
+   // Change from external server:
+   // const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
+   // const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
+   
+   // To local server:
+   const prepareRequest = '/api/phone-auth/prepare';
+   const processResponse = '/api/phone-auth/process';
+   ```
+
+5. **Start the development server:**
    ```bash
    npm run dev
    ```
@@ -44,21 +81,51 @@ Click "Get My Phone Number" to retrieve the phone number associated with your de
 ### 2. Verify Phone Number
 Enter a phone number and click "Verify Phone Number" to verify ownership.
 
+## Server Configuration
+
+The app supports two server configurations:
+
+### Option 1: External Server (Default)
+```javascript
+const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
+const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
+```
+- **Pros**: No backend setup required, instant testing
+- **Cons**: Uses shared demo credentials, not for production
+
+### Option 2: Local Server
+```javascript
+const prepareRequest = '/api/phone-auth/prepare';
+const processResponse = '/api/phone-auth/process';
+```
+- **Pros**: Your own credentials, full control, production-ready
+- **Cons**: Requires backend setup and .env configuration
+
 ## How It Works
 
-1. **Backend** (`server.js`):
+### With Local Server (`server.ts`):
+1. **Backend** (already provided):
+   - Complete TypeScript implementation with proper type definitions
    - Uses `glide-sdk` to communicate with Glide's API
-   - Exposes two endpoints:
+   - Exposes three endpoints:
       - `POST /api/phone-auth/prepare` - Creates a verification request
       - `POST /api/phone-auth/process` - Processes the verification response
-   - Automatically handles response format compatibility
+      - `GET /api/health` - Health check with credentials validation
+   - Automatically handles response format compatibility and eligibility checks
 
-2. **Frontend** (`src/App.jsx`):
-   - Uses `web-client-sdk/react` for the `usePhoneAuth` hook
-   - Handles the Digital Credentials API browser flow
-   - Shows loading states and results
+### With External Server:
+1. **Backend**:
+   - Pre-configured Glide SDK integration with demo credentials
+   - Hosted endpoints handle all authentication logic
+   - Same response format as local server
 
-The integration is designed to be seamless - the Glide SDK returns properly formatted responses that the Web Client SDK can use directly.
+### Frontend (`src/App.jsx`):
+- Uses `glide-web-client-sdk/react` for the `usePhoneAuth` hook
+- Handles the Digital Credentials API browser flow
+- Shows loading states, progress bars, and results
+- Supports both "Get Phone Number" and "Verify Phone Number" flows
+
+The integration is designed to be seamless - both server options return properly formatted responses that the Web Client SDK can use directly.
 
 ## Browser Support
 
