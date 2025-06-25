@@ -1,10 +1,64 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { GlideClient } from '@stavbl/glide-sdk';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
+
+// Type definitions
+interface PhoneAuthPrepareRequest {
+  use_case: string;
+  phone_number?: string;
+  plmn?: {
+    mcc: string;
+    mnc: string;
+  };
+  consent_data?: {
+    consentText: string;
+    policyLink: string;
+    policyText: string;
+  };
+}
+
+interface PhoneAuthProcessRequest {
+  response: any; // The credential response object from the client
+  session: string;
+  phoneNumber?: string;
+}
+
+interface EligibilityErrorResponse {
+  error: string;
+  message: string;
+  details: {
+    eligible: boolean;
+    carrier_name?: string;
+    reason?: string;
+  };
+}
+
+interface AuthPrepareResponse {
+  protocol: string;
+  data: any;
+  session?: string;
+}
+
+interface AuthProcessResponse {
+  phone_number?: string;
+  phoneNumber?: string;
+  verified?: boolean;
+  [key: string]: any;
+}
+
+interface HealthCheckResponse {
+  status: string;
+  glideInitialized: boolean;
+  glideProperties: string[];
+  env: {
+    hasClientId: boolean;
+    hasClientSecret: boolean;
+  };
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,19 +69,20 @@ app.use(express.json());
 
 // Initialize Glide client
 const glide = new GlideClient({
-  clientId: process.env.GLIDE_CLIENT_ID,
-  clientSecret: process.env.GLIDE_CLIENT_SECRET,
+  clientId: process.env.GLIDE_CLIENT_ID!,
+  clientSecret: process.env.GLIDE_CLIENT_SECRET!,
+  // @ts-ignore - environment is a valid option but not in the type definition
   environment: 'sandbox' // Change to 'production' when ready
 });
 
 // Phone Auth Request endpoint
-app.post('/api/phone-auth/prepare', async (req, res) => {
+app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, PhoneAuthPrepareRequest>, res: Response) => {
   try {
     console.log('/api/phone-auth/prepare', req.body);
     const { use_case, phone_number, plmn, consent_data } = req.body;
 
     // Pre-process the request parameters
-    const prepareParams = {
+    const prepareParams: any = {
       use_case
     };
 
@@ -67,7 +122,7 @@ app.post('/api/phone-auth/prepare', async (req, res) => {
     
     // Check if this is an eligibility response (carrier not supported)
     if (response?.eligible === false) {
-      const eligibilityResponse = {
+      const eligibilityResponse: EligibilityErrorResponse = {
         error: 'CARRIER_NOT_SUPPORTED',
         message: response.reason || 'This carrier is not supported',
         details: {
@@ -84,39 +139,40 @@ app.post('/api/phone-auth/prepare', async (req, res) => {
     if (response.protocol && response.data) {
       // New format - response is already properly formatted
       console.log('Using direct format from Glide SDK');
-      res.json(response);
+      res.json(response as AuthPrepareResponse);
     } else if (response.auth_request) {
       // Legacy format - need to transform
       console.log('Transforming legacy format');
-      res.json({
+      const transformedResponse: AuthPrepareResponse = {
         protocol: response.auth_request.protocol || 'secure-auth-v1',
         data: response.auth_request.request,
         session: response.auth_request.session
-      });
+      };
+      res.json(transformedResponse);
     } else {
       throw new Error('Unexpected response format from Glide SDK');
     }
   } catch (error) {
-    console.error('Phone auth request error:', error.message);
+    console.error('Phone auth request error:', (error as Error).message);
     res.status(500).json({ 
-      error: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: (error as Error).message,
+      details: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
     });
   }
 });
 
 // Phone Auth Process endpoint
-app.post('/api/phone-auth/process', async (req, res) => {
+app.post('/api/phone-auth/process', async (req: Request<{}, {}, PhoneAuthProcessRequest>, res: Response) => {
   try {
     console.log('/api/phone-auth/process', req.body);
     const { response, session, phoneNumber } = req.body;
-    const processParams = {
+    const processParams: any = {
       credentialResponse: response,
       session: session,
       phoneNumber: phoneNumber,
     };
     console.log('Calling glide.magicAuth.processCredential with:', processParams);    
-    const result = await glide.magicAuth.processCredential(processParams);
+    const result = await glide.magicAuth.processCredential(processParams) as AuthProcessResponse;
 
     console.log('Response:', result);
     // Return the result directly if it already has the expected format
@@ -131,16 +187,16 @@ app.post('/api/phone-auth/process', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Phone auth process error:', error.message);
+    console.error('Phone auth process error:', (error as Error).message);
     res.status(500).json({ 
-      error: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: (error as Error).message,
+      details: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
     });
   }
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req: Request, res: Response<HealthCheckResponse>) => {
   res.json({ 
     status: 'ok',
     glideInitialized: !!glide,
