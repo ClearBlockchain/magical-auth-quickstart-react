@@ -108,14 +108,17 @@ app.post('/api/phone-auth/prepare', async (req, res) => {
 // Phone Auth Process endpoint
 app.post('/api/phone-auth/process', async (req, res) => {
   try {
+    console.log('/api/phone-auth/process', req.body);
     const { response, session, phoneNumber } = req.body;
-    
-    const result = await glide.magicAuth.processCredential(
-      response,
-      session,
-      phoneNumber,
-    );
-    
+    const processParams = {
+      credentialResponse: response,
+      session: session,
+      phoneNumber: phoneNumber,
+    };
+    console.log('Calling glide.magicAuth.processCredential with:', processParams);    
+    const result = await glide.magicAuth.processCredential(processParams);
+
+    console.log('Response:', result);
     // Return the result directly if it already has the expected format
     if (result.phone_number || result.phoneNumber) {
       res.json(result);
