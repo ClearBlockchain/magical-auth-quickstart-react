@@ -6,6 +6,7 @@ function App() {
   const [phoneInput, setPhoneInput] = useState('');
   const [selectedFlow, setSelectedFlow] = useState('verify');
   const [phoneError, setPhoneError] = useState('');
+  const [resultFlow, setResultFlow] = useState(null); // Track which flow generated the result
   
   // Initialize the client first
   const { usePhoneAuth } = useClient({
@@ -36,8 +37,10 @@ function App() {
         }
       });
       console.log('Phone number retrieved:', result);
+      setResultFlow('get'); // Mark that this result came from 'get' flow
     } catch (error) {
       console.error('Failed to get phone number:', error);
+      setResultFlow('get'); // Mark even for errors
     }
   };
 
@@ -52,8 +55,10 @@ function App() {
     try {
       const result = await verifyPhoneNumber(phoneInput);
       console.log('Verification result:', result);
+      setResultFlow('verify'); // Mark that this result came from 'verify' flow
     } catch (error) {
       console.error('Failed to verify phone number:', error);
+      setResultFlow('verify'); // Mark even for errors
     }
   };
 
@@ -297,7 +302,7 @@ function App() {
         </section>
 
         {/* Results Section */}
-        {error && (
+        {error && resultFlow === selectedFlow && (
           <div className={`message ${error.error === 'CARRIER_NOT_SUPPORTED' ? 'message-warning' : 'message-error'}`}>
             <span className="message-icon">{error.error === 'CARRIER_NOT_SUPPORTED' ? '⚠️' : '✕'}</span>
             <div className="message-content">
@@ -314,14 +319,23 @@ function App() {
           </div>
         )}
 
-        {result && (
+        {result && resultFlow === selectedFlow && (
           <div className="message message-success">
             <span className="message-icon">✓</span>
             <div className="message-content">
               <h4>Success</h4>
               <p><strong>Phone Number:</strong> {result.phoneNumber}</p>
-              <p><strong>Verified:</strong> {result.verified ? 'Yes' : 'No'}</p>
-              {result.session && <p><code>Session: {result.session}</code></p>}
+              <p><strong>Verified:</strong> {selectedFlow === 'verify' ? (result.verified ? 'Yes' : 'No') : 'Yes'}</p>
+              {result.session && (
+                <div className="session-info">
+                  <p><strong>Session Details:</strong></p>
+                  <pre className="session-data">
+                    {typeof result.session === 'object' 
+                      ? JSON.stringify(result.session, null, 2) 
+                      : result.session}
+                  </pre>
+                </div>
+              )}
             </div>
           </div>
         )}
