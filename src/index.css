@@ -276,6 +276,7 @@ button {
 
 .message-content {
   flex: 1;
+  min-width: 0; /* Ensure content can shrink */
 }
 
 .message-error {
@@ -316,6 +317,7 @@ button {
   font-size: 15px;
   color: #515154;
   margin: 0;
+  word-wrap: break-word;
 }
 
 .message code {
@@ -323,6 +325,51 @@ button {
   background: rgba(0, 0, 0, 0.05);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+/* Mobile responsiveness for messages */
+@media (max-width: 768px) {
+  .message {
+    padding: 12px 16px;
+    margin-top: 16px;
+  }
+  
+  .message h4 {
+    font-size: 16px;
+  }
+  
+  .message p {
+    font-size: 14px;
+  }
+  
+  .message code {
+    font-size: 12px;
+    padding: 1px 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  .message-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .message h4 {
+    font-size: 15px;
+  }
+  
+  .message p {
+    font-size: 13px;
+  }
+  
+  .message code {
+    font-size: 11px;
+  }
 }
 
 .carrier-info {
@@ -363,6 +410,29 @@ button {
   line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Mobile responsiveness for session data */
+@media (max-width: 768px) {
+  .session-data {
+    padding: 8px 12px;
+    font-size: 11px;
+    max-height: 150px;
+  }
+  
+  .session-info p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .session-data {
+    padding: 6px 8px;
+    font-size: 10px;
+    max-height: 120px;
+    line-height: 1.4;
+  }
 }
 
 /* Loading State */
@@ -513,6 +583,10 @@ button {
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0 16px 40px;
+  }
+  
   .header {
     padding: 40px 0;
   }
@@ -525,11 +599,177 @@ button {
     font-size: 19px;
   }
   
+  .section {
+    margin-bottom: 32px;
+  }
+  
+  .section-header {
+    margin-bottom: 16px;
+  }
+  
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-right: 12px;
+  }
+  
+  .section-title h2 {
+    font-size: 24px;
+  }
+  
+  .section-title p {
+    font-size: 15px;
+  }
+  
+  .card {
+    padding: 24px;
+  }
+  
+  .card h3 {
+    font-size: 19px;
+  }
+  
+  .card p {
+    font-size: 14px;
+  }
+  
+  button {
+    padding: 10px 24px;
+    font-size: 16px;
+  }
+  
   .progress-container {
     padding: 0 24px;
   }
   
   .progress-label {
     font-size: 11px;
+  }
+  
+  .carrier-info {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px 32px;
+  }
+  
+  .header {
+    padding: 32px 0;
+  }
+  
+  .header-brand {
+    font-size: 14px;
+  }
+  
+  .header-logo {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .header p {
+    font-size: 17px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .section-icon {
+    margin-right: 0;
+  }
+  
+  .section-title h2 {
+    font-size: 21px;
+  }
+  
+  .section-title p {
+    font-size: 14px;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+  
+  .card h3 {
+    font-size: 17px;
+  }
+  
+  .card p {
+    font-size: 13px;
+  }
+  
+  .input-wrapper input {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .phone-error {
+    font-size: 12px;
+  }
+  
+  .format-hint {
+    font-size: 11px;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .progress-container {
+    padding: 0 12px;
+    margin-top: 24px;
+  }
+  
+  .progress-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  
+  .progress-label {
+    font-size: 10px;
+  }
+  
+  .progress-step {
+    padding: 0 4px;
+  }
+  
+  .carrier-info {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  .powered-by {
+    margin-top: 48px;
+    padding-top: 32px;
+    font-size: 12px;
+  }
+  
+  .powered-by-logo {
+    width: 16px;
+    height: 16px;
   }
 } 

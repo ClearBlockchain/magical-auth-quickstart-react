@@ -8,12 +8,19 @@ function App() {
   const [phoneError, setPhoneError] = useState('');
   const [resultFlow, setResultFlow] = useState(null); // Track which flow generated the result
   
+  // const prepareRequest = '/api/phone-auth/prepare';
+  // const processResponse = '/api/phone-auth/process';
+
+  const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
+  const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
+
   // Initialize the client first
   const { usePhoneAuth } = useClient({
     phoneAuthEndpoints: {
-      prepareRequest: window.location.origin + '/api/phone-auth/prepare',
-      processResponse: window.location.origin + '/api/phone-auth/process'
-    }
+      prepareRequest,
+      processResponse
+    },
+    debug: true,
   });
   
   const {
@@ -324,7 +331,7 @@ function App() {
             <span className="message-icon">✓</span>
             <div className="message-content">
               <h4>Success</h4>
-              <p><strong>Phone Number:</strong> {result.phoneNumber}</p>
+              <p><strong>Phone Number:</strong> {result.phoneNumber || result.phone_number}</p>
               <p><strong>Verified:</strong> {selectedFlow === 'verify' ? (result.verified ? 'Yes' : 'No') : 'Yes'}</p>
               {result.session && (
                 <div className="session-info">
