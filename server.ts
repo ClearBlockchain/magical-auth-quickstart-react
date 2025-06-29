@@ -1,25 +1,12 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { GlideClient } from 'glide-sdk';
+import { GlideClient, AuthV2PrepDto,  } from 'glide-sdk';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
 
 // Type definitions
-interface PhoneAuthPrepareRequest {
-  use_case: string;
-  phone_number?: string;
-  plmn?: {
-    mcc: string;
-    mnc: string;
-  };
-  consent_data?: {
-    consentText: string;
-    policyLink: string;
-    policyText: string;
-  };
-}
 
 interface PhoneAuthProcessRequest {
   response: any; // The credential response object from the client
@@ -71,12 +58,10 @@ app.use(express.json());
 const glide = new GlideClient({
   clientId: process.env.GLIDE_CLIENT_ID!,
   clientSecret: process.env.GLIDE_CLIENT_SECRET!,
-  // @ts-ignore - environment is a valid option but not in the type definition
-  environment: 'sandbox' // Change to 'production' when ready
 });
 
 // Phone Auth Request endpoint
-app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, PhoneAuthPrepareRequest>, res: Response) => {
+app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, AuthV2PrepDto>, res: Response) => {
   try {
     console.log('/api/phone-auth/prepare', req.body);
     const { use_case, phone_number, plmn, consent_data } = req.body;
@@ -110,9 +95,9 @@ app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, PhoneAuthPrepare
     // Add consent data if provided
     if (consent_data) {
       prepareParams.consent_data = {
-        consent_text: consent_data.consentText,
-        policy_link: consent_data.policyLink,
-        policy_text: consent_data.policyText
+        consent_text: consent_data.consent_text,
+        policy_link: consent_data.policy_link,
+        policy_text: consent_data.policy_text
       };
     }
 
@@ -140,15 +125,6 @@ app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, PhoneAuthPrepare
       // New format - response is already properly formatted
       console.log('Using direct format from Glide SDK');
       res.json(response as AuthPrepareResponse);
-    } else if (response.auth_request) {
-      // Legacy format - need to transform
-      console.log('Transforming legacy format');
-      const transformedResponse: AuthPrepareResponse = {
-        protocol: response.auth_request.protocol || 'secure-auth-v1',
-        data: response.auth_request.request,
-        session: response.auth_request.session
-      };
-      res.json(transformedResponse);
     } else {
       throw new Error('Unexpected response format from Glide SDK');
     }
