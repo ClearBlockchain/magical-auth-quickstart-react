@@ -384,6 +384,44 @@ button {
   color: #1d1d1f;
 }
 
+/* Error Code Display */
+.error-code {
+  margin-top: 8px;
+  color: #515154;
+}
+
+.error-code small {
+  font-size: 12px;
+  display: block;
+  line-height: 1.4;
+}
+
+/* Browser Error Details */
+.browser-error-details {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.browser-error-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+}
+
+.browser-error-details pre {
+  margin: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 /* Session Info */
 .session-info {
   margin-top: 16px;

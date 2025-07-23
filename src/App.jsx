@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { useClient } from 'glide-web-client-sdk/react';
+import { 
+  usePhoneAuth, 
+  PhoneAuthErrorCode, 
+  isPhoneAuthError, 
+  isUserError, 
+  getUserMessage 
+} from 'glide-web-client-sdk/react';
 import glideLogo from './assets/Glide-Logomark.svg';
 
 function App() {
@@ -10,22 +16,14 @@ function App() {
   
   // URL Configuration:
   // Option 1: Local server routes (requires running the local Express server with your own Glide credentials)
-  // const prepareRequest = '/api/phone-auth/prepare';
-  // const processResponse = '/api/phone-auth/process';
+  const prepareRequest = '/api/phone-auth/prepare';
+  const processResponse = '/api/phone-auth/process';
 
   // Option 2: Pre-made external server (for quick testing with hosted credentials)
-  const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
-  const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
+  // const prepareRequest = 'https://checkout-demo-server.glideidentity.dev/generate-get-request';
+  // const processResponse = 'https://checkout-demo-server.glideidentity.dev/processCredential';
 
-  // Initialize the client first
-  const { usePhoneAuth } = useClient({
-    phoneAuthEndpoints: {
-      prepareRequest,
-      processResponse
-    },
-    debug: true,
-  });
-  
+  // Initialize phone auth directly like in Vue example
   const {
     getPhoneNumber,
     verifyPhoneNumber,
@@ -34,8 +32,14 @@ function App() {
     result,
     currentStep,
     isSupported
-  } = usePhoneAuth();
-
+  } = usePhoneAuth({
+    endpoints: {
+      prepare: prepareRequest,
+      process: processResponse
+    },
+    debug: true
+  });
+  
   const handleGetNumber = async () => {
     try {
       // When calling getPhoneNumber without parameters, the server will use default T-Mobile PLMN
@@ -313,18 +317,28 @@ function App() {
 
         {/* Results Section */}
         {error && resultFlow === selectedFlow && (
-          <div className={`message ${error.error === 'CARRIER_NOT_SUPPORTED' ? 'message-warning' : 'message-error'}`}>
-            <span className="message-icon">{error.error === 'CARRIER_NOT_SUPPORTED' ? '⚠️' : '✕'}</span>
+          <div className={`message ${error.code === PhoneAuthErrorCode.CARRIER_NOT_ELIGIBLE ? 'message-warning' : 'message-error'}`}>
+            <span className="message-icon">{error.code === PhoneAuthErrorCode.CARRIER_NOT_ELIGIBLE ? '⚠️' : '✕'}</span>
             <div className="message-content">
-              <h4>{error.error === 'CARRIER_NOT_SUPPORTED' ? 'Carrier Not Supported' : 'Error'}</h4>
-              <p>{error.message || 'An error occurred'}</p>
-              {error.details?.carrier_name && (
+              <h4>{error.code === PhoneAuthErrorCode.CARRIER_NOT_ELIGIBLE ? 'Carrier Not Supported' : 'Error'}</h4>
+              <p>{isPhoneAuthError(error) && isUserError(error) ? getUserMessage(error) : (error.message || 'An error occurred')}</p>
+              {error.details?.reason && (
                 <div className="carrier-info">
-                  <strong>Carrier:</strong> {error.details.carrier_name}<br />
-                  <strong>Reason:</strong> {error.details.reason}
+                  <strong>Reason:</strong> {error.details.reason || 'Not supported by carrier'}
                 </div>
               )}
-              {error.code && error.error !== 'CARRIER_NOT_SUPPORTED' && <p><code>{error.code}</code></p>}
+              {error.code && error.code !== PhoneAuthErrorCode.CARRIER_NOT_ELIGIBLE && (
+                <p className="error-code">
+                  <small>Error Code: {error.code}</small>
+                  {error.requestId && <><br /><small>Request ID: {error.requestId}</small></>}
+                </p>
+              )}
+              {error.browserError && (
+                <details className="browser-error-details">
+                  <summary>Browser Error Details</summary>
+                  <pre>{JSON.stringify(error.browserError, null, 2)}</pre>
+                </details>
+              )}
             </div>
           </div>
         )}

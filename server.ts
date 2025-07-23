@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { GlideClient, AuthV2PrepDto,  } from 'glide-sdk';
+import { GlideClient, AuthV2PrepDto, MagicAuthError } from 'glide-sdk';
+
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -12,16 +13,6 @@ interface PhoneAuthProcessRequest {
   response: any; // The credential response object from the client
   session: string;
   phoneNumber?: string;
-}
-
-interface EligibilityErrorResponse {
-  error: string;
-  message: string;
-  details: {
-    eligible: boolean;
-    carrier_name?: string;
-    reason?: string;
-  };
 }
 
 interface AuthPrepareResponse {
@@ -105,21 +96,6 @@ app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, AuthV2PrepDto>, 
     const response = await glide.magicAuth.prepare(prepareParams);
     console.log('Response:', response);
     
-    // Check if this is an eligibility response (carrier not supported)
-    if (response?.eligible === false) {
-      const eligibilityResponse: EligibilityErrorResponse = {
-        error: 'CARRIER_NOT_SUPPORTED',
-        message: response.reason || 'This carrier is not supported',
-        details: {
-          eligible: false,
-          carrier_name: response.carrier_name,
-          reason: response.reason
-        }
-      };
-      res.status(400).json(eligibilityResponse);
-      return;
-    }
-    
     // Check if response already has the expected format
     if (response.protocol && response.data) {
       // New format - response is already properly formatted
@@ -129,9 +105,33 @@ app.post('/api/phone-auth/prepare', async (req: Request<{}, {}, AuthV2PrepDto>, 
       throw new Error('Unexpected response format from Glide SDK');
     }
   } catch (error) {
+    console.log('Caught error:', error);
+    
+    if (error instanceof MagicAuthError) {
+      // You now have access to all error details
+      console.log('MagicAuthError details:', {
+        code: error.code,
+        message: error.message,
+        status: error.status,
+        requestId: error.requestId,
+        details: error.details
+      });
+      
+      // Return the structured error to frontend
+      res.status(error.status).json({
+        error: error.code,
+        message: error.message,
+        requestId: error.requestId,
+        details: error.details
+      });
+      return;
+    }
+    
+    // Handle other errors
     console.error('Phone auth request error:', (error as Error).message);
     res.status(500).json({ 
-      error: (error as Error).message,
+      error: 'UNEXPECTED_ERROR',
+      message: (error as Error).message,
       details: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
     });
   }
@@ -163,9 +163,33 @@ app.post('/api/phone-auth/process', async (req: Request<{}, {}, PhoneAuthProcess
       });
     }
   } catch (error) {
+    console.log('Caught error:', error);
+    
+    if (error instanceof MagicAuthError) {
+      // You now have access to all error details
+      console.log('MagicAuthError details:', {
+        code: error.code,
+        message: error.message,
+        status: error.status,
+        requestId: error.requestId,
+        details: error.details
+      });
+      
+      // Return the structured error to frontend
+      res.status(error.status).json({
+        error: error.code,
+        message: error.message,
+        requestId: error.requestId,
+        details: error.details
+      });
+      return;
+    }
+    
+    // Handle other errors
     console.error('Phone auth process error:', (error as Error).message);
     res.status(500).json({ 
-      error: (error as Error).message,
+      error: 'UNEXPECTED_ERROR',
+      message: (error as Error).message,
       details: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
     });
   }

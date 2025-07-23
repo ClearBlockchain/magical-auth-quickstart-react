@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.glideidentity'
+version = '1.0.0'
+sourceCompatibility = '21'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    // mavenLocal()
+}
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Glide SDK - published version from Maven Central
+    implementation 'com.glideapi:glide-sdk-java:3.0.2'
+    
+    // Environment variables are handled by the SDK now
+    
+    // JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
+    // Lombok for cleaner code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    // Development tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+springBoot {
+    mainClass = 'com.glideidentity.JavaServer'
+}
+
+// Task to run the server
+task runServer(type: JavaExec) {
+    group = 'application'
+    description = 'Run the Java server'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.glideidentity.JavaServer'
+    
+    // Pass environment variables
+    environment = System.getenv()
+}
+
+// Configure bootRun to load .env file
+bootRun {
+    // Set working directory to project root
+    workingDir = projectDir
+    
+    // Load .env file if it exists
+    doFirst {
+        def envFile = file('.env')
+        if (envFile.exists()) {
+            envFile.eachLine { line ->
+                if (!line.startsWith('#') && line.contains('=')) {
+                    def (key, value) = line.split('=', 2)
+                    environment key.trim(), value.trim()
+                }
+            }
+        }
+    }
+} 
