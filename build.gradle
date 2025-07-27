@@ -26,16 +26,16 @@ configurations {
 }
 
 repositories {
-    mavenCentral()
     // mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     
-    // Glide SDK - published version from Maven Central
-    implementation 'com.glideapi:glide-sdk-java:3.0.2'
+    // Glide SDK - official version from Maven Central
+    implementation 'com.glideapi:glide-sdk-java:3.0.3'
     
     // Environment variables are handled by the SDK now
     
