@@ -16,6 +16,7 @@ This is a minimal example demonstrating secure phone authentication using:
 
 For development with your own Glide credentials:
 
+**Option A: Local Installation**
 1. **Install dependencies:**
    ```bash
    npm install
@@ -36,9 +37,12 @@ For development with your own Glide credentials:
    npm run dev:java # Java server
    ```
 
-   This will start:
-   - Backend server on http://localhost:3001
-   - React app on http://localhost:3000
+**Option B: Docker (Recommended)**
+See the [Docker Development](#docker-development) section below for containerized setup.
+
+This will start:
+- Backend server on http://localhost:3001
+- React app on http://localhost:3000
 
 ### Quick Testing (External Server)
 
@@ -67,6 +71,64 @@ For immediate testing without backend setup:
 
    This uses a pre-configured external server with hosted Glide credentials for quick testing.
 
+## Docker Development
+
+For containerized development with consistent environments:
+
+**Prerequisites:**
+- Docker and Docker Compose installed
+- Glide API credentials (get them from [Glide Documentation](https://docs.glideapi.com/))
+
+**Setup:**
+1. **Configure environment variables:**
+   
+   Create a `.env` file in the project root:
+   ```env
+   GLIDE_CLIENT_ID=your_client_id_here
+   GLIDE_CLIENT_SECRET=your_client_secret_here
+   ```
+
+2. **Start with Docker Compose:**
+   ```bash
+   # Full development mode (TypeScript server + client) - DEFAULT
+   docker compose up -d
+   
+   # TypeScript server only
+   COMPONENT=server docker compose up -d
+   
+   # Java server only  
+   COMPONENT=server:java docker compose up -d
+   
+   # Client only
+   COMPONENT=client docker compose up -d
+   
+   # Java server + client
+   COMPONENT=dev:java docker compose up -d
+   
+   # Build mode
+   COMPONENT=build docker compose up -d
+   
+   # Preview mode (production build)
+   COMPONENT=preview docker compose up -d
+   ```
+
+   This will start:
+   - Backend server on http://localhost:3001
+   - React app on http://localhost:3000
+
+**Available Components:**
+- `server` - TypeScript server only (port 3001)
+- `server:java` - Java server only (port 3001)
+- `client` - React client only (port 3000)
+- `dev:java` - Java server + React client
+- `build` - Build both client and server
+- `preview` - Serve production build
+
+**Stop the containers:**
+```bash
+docker compose down
+```
+
 ## Server Options
 
 You can choose between TypeScript or Java backend:
@@ -87,13 +149,22 @@ The TypeScript server is the default option and starts automatically with `npm r
 - Java 21 or higher
 - Gradle (will use wrapper scripts if not installed globally)
 
-**Build and run:**
+**Local Installation:**
 ```bash
 # Build the Java server
 npm run server:java:build
 
 # Start with Java backend
 npm run dev:java
+```
+
+**Docker (Recommended):**
+```bash
+# Start Java server + client
+COMPONENT=dev:java docker compose up -d
+
+# Start Java server only
+COMPONENT=server:java docker compose up -d
 ```
 
 **Features:**
@@ -104,10 +175,16 @@ npm run dev:java
 
 ### Java Server Commands
 
+**Local Installation:**
 - `npm run dev:java` - Start both Java server and React client
 - `npm run server:java` - Start only the Java server
 - `npm run server:java:build` - Build the Java server
 - `npm run server:java:clean` - Clean Java build files
+
+**Docker:**
+- `COMPONENT=dev:java docker compose up -d` - Start both Java server and React client
+- `COMPONENT=server:java docker compose up -d` - Start only the Java server
+- `COMPONENT=build docker compose up -d` - Build both client and server
 
 ## Usage
 
@@ -159,6 +236,32 @@ Both servers provide identical functionality. Choose based on your team's expert
 - ✅ Better for Java teams
 - ✅ More mature ecosystem
 - ✅ Better IDE support
+
+## Development Modes
+
+This project supports multiple development modes for different scenarios:
+
+### Local Development
+- **Full Stack**: `npm run dev` - TypeScript server + React client
+- **Java Full Stack**: `npm run dev:java` - Java server + React client
+- **Server Only**: `npm run server` - TypeScript server only
+- **Java Server Only**: `npm run server:java` - Java server only
+- **Client Only**: `npm run client` - React client only
+
+### Docker Development
+- **Full Stack**: `docker compose up -d` - TypeScript server + React client
+- **Java Full Stack**: `COMPONENT=dev:java docker compose up -d` - Java server + React client
+- **Server Only**: `COMPONENT=server docker compose up -d` - TypeScript server only
+- **Java Server Only**: `COMPONENT=server:java docker compose up -d` - Java server only
+- **Client Only**: `COMPONENT=client docker compose up -d` - React client only
+- **Build Mode**: `COMPONENT=build docker compose up -d` - Build both client and server
+- **Preview Mode**: `COMPONENT=preview docker compose up -d` - Serve production build
+
+### Use Cases
+- **Full Development**: Use full stack modes for complete development
+- **Backend Testing**: Use server-only modes to test API endpoints
+- **Frontend Testing**: Use client-only mode with external server
+- **Production Testing**: Use preview mode to test production builds
 
 ## Server Configuration
 
@@ -253,4 +356,9 @@ The Digital Credentials API is currently experimental and requires:
 
 - **"Browser not supported"**: Use a compatible browser with Digital Credentials API support
 - **API errors**: Check your Glide credentials in the `.env` file
-- **Network errors**: Ensure both servers are running (`npm run dev`) 
+- **Network errors**: Ensure both servers are running (`npm run dev` or `docker compose up -d`)
+- **Docker issues**: 
+  - Ensure Docker and Docker Compose are installed
+  - Check that ports 3000 and 3001 are available
+  - Verify `.env` file exists and contains valid credentials
+  - Use `docker compose logs` to view container logs 

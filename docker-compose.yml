@@ -1,0 +1,16 @@
+name: magical-auth-quickstart-react-dev
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"  # Vite dev server (React)
+      - "3001:3001"  # Express/Java API server
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=${NODE_ENV:-dev}
+      - COMPONENT=${COMPONENT:-full}  # full, server, server:java, client
+    working_dir: /app
+    env_file:
+      - .env

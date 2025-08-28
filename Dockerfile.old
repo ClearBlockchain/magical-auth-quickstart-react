@@ -1,0 +1,66 @@
+# Development container for Glide SDK
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install bash, vim, and git for development
+RUN apk add --no-cache bash vim git sudo gradle
+
+### NGROK ##
+#
+## 1) System deps
+#RUN apk add --no-cache wget tar
+#
+## 2) Install ngrok binary (detect arch -> download -> install)
+##ARG NGROK_VERSION=3.13.0
+##RUN set -eux; \
+##  ARCH="$(uname -m)"; \
+##  case "$ARCH" in \
+##    x86_64) NGROK_ARCH=amd64 ;; \
+##    aarch64) NGROK_ARCH=arm64 ;; \
+##    *) echo "Unsupported arch: $ARCH" && exit 1 ;; \
+##  esac; \
+##  wget -O /tmp/ngrok.tgz "https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-v${NGROK_VERSION}-linux-${NGROK_ARCH}.tgz" || \
+##  wget -O /tmp/ngrok.tgz "https://downloads.ngrok.com/linux/${NGROK_ARCH}/ngrok-v${NGROK_VERSION}-linux-${NGROK_ARCH}.tgz"; \
+##  tar -xzf /tmp/ngrok.tgz -C /usr/local/bin; \
+##  rm /tmp/ngrok.tgz; \
+##  ngrok version
+#RUN set -eux; \
+#  apk add --no-cache wget tar; \
+#  ARCH="$(uname -m)"; \
+#  case "$ARCH" in \
+#    x86_64) NGROK_ARCH=amd64 ;; \
+#    aarch64) NGROK_ARCH=arm64 ;; \
+#    *) echo "Unsupported arch: $ARCH" && exit 1 ;; \
+#  esac; \
+#  # Get latest ngrok release from downloads.ngrok.com
+#  NGROK_URL="https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-${NGROK_ARCH}.tgz"; \
+#  wget -O /tmp/ngrok.tgz "$NGROK_URL"; \
+#  tar -xzf /tmp/ngrok.tgz -C /usr/local/bin; \
+#  rm /tmp/ngrok.tgz; \
+#  ngrok version
+#
+############
+
+# Copy directory structure
+COPY . .
+
+# Install dependencies (including dev dependencies)
+RUN npm ci --include=dev
+RUN npm install -g typescript
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+RUN adduser nodejs wheel
+RUN echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+EXPOSE 3000 3001
+
+# Keep container running for IDE connection
+CMD ["tail", "-f", "/dev/null"]
